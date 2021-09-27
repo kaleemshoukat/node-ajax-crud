@@ -25,10 +25,12 @@ const UserSchema = new Schema({
         type: String,
         min: 3,
         max: 255,
-        required: true
+        required: true,
+        unique: true
     },
     image: {
         type: String,
+        max: 255,
         required: true
     },
     gender: {
@@ -45,6 +47,20 @@ const UserSchema = new Schema({
 },{
     timestamps: true
 });
+
+const lookupEmail = async (email) => {
+    const user = await User.find({email: email});
+    if (user) {
+        throw new Error('Email already exists.');
+    }
+}
+
+const lookupUsername = async (user_name) => {
+    const user = await User.find({user_name: user_name});
+    if (user) {
+        throw new Error('Username already exists.');
+    }
+}
 
 const User=mongoose.model('User', UserSchema)
 module.exports=User
