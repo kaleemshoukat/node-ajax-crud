@@ -1,0 +1,43 @@
+<%- contentFor('title') %>
+Add Post
+<%- contentFor('body') %>
+<div class="col-md-12">
+    <h2 class="text-danger">Add Post</h2>
+    <% if(typeof errorMessage !== "undefined"){ %>
+    <div class="alert alert-danger">
+        <ul>
+            <% for(var i = 0; i < errorMessage['details'].length; i++){ %>
+                <li> <%= errorMessage['details'][i]['message'] %> </li>
+            <% } %>
+        </ul>
+    </div>
+    <% } %>
+    <% if (typeof successMessage !== "undefined") { %>
+            <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                <%= successMessage %>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+    <% } %>
+    <form action="/submit-post" method="post">
+        <input type="hidden" name="_csrf" value="<%- _csrf  %>">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label for="">Title</label>
+                    <input type="text" name="title" value="<% if(typeof errorMessage !== "undefined"){ %><%- inputData.title %><% } %>" class="form-control">
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label for="">Description</label>
+                    <textarea name="description" class="form-control"><% if(typeof errorMessage !== "undefined"){ %><%-inputData.description%><% } %></textarea>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>

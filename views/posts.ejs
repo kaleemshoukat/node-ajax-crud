@@ -1,0 +1,52 @@
+<%- contentFor('title') %>
+Posts
+<%- contentFor('body') %>
+<div class="col-md-12 table-responsive">
+    <% if (typeof errorMessage !== "undefined") { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= errorMessage %>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    <% } %>
+    <% if (typeof successMessage !== "undefined") { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= successMessage %>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    <% } %>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Titel</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% for(var i=0; i < posts.length; i++) { %>
+            <tr>
+               <td><%= i %></td>
+               <td><%= posts[i]['title'] %></td>
+               <td><%= posts[i]['description'] %></td>
+               <td>
+                   <a href="/edit-post/<%= posts[i]['_id'] %>" class="btn btn-primary">Edit</a>
+                   <a href="/delete-post/<%= posts[i]['_id'] %>" class="btn btn-danger">Delete</a>
+               </td>
+            </tr>
+        <% } %>
+        </tbody>
+    </table>
+
+    <%- include('./partials/pagination.ejs') %>
+
+</div>
+<script>
+    $(document).ready(function (){
+        console.log('test')
+    })
+</script>
