@@ -4,15 +4,45 @@ const upload = multer({ dest: 'uploads/'});
 const fs = require('fs');
 
 const registerValidation = async (req, res, next) => {
+    console.log(req.body);
+
     const schema = Joi.object().keys({
-        first_name: Joi.string().alphanum().min(3).max(30).required(),
-        last_name: Joi.string().alphanum().min(3).max(30).required(),
-        user_name: Joi.string().min(3).max(30).required(),
-        email: Joi.string().min(3).max(255).required().trim(true),
-        image: Joi.string().required(),
-        gender: Joi.string().required(),
-        password: Joi.string().min(3).max(15).required().trim(true),
-        password_confirmation: Joi.string().min(3).max(15).required().valid(Joi.ref('password'))
+        first_name: Joi.string().alphanum().min(3).max(30).required().empty().messages({
+            'string.empty': 'This field cannot be empty.',
+            'string.alphanum': 'This field can have Only alphabets.',
+            'string.min': 'This field should have a minimum length of {#limit}.',
+            'string.max': 'This field can have maximum length of {#limit}.',
+            'any.required': 'This field is required.'
+        }),
+        last_name: Joi.string().alphanum().min(3).max(30).required().empty('').messages({
+            'string.alphanum': 'This field can have Only alphabets.',
+            'string.min': 'This field should have a minimum length of {#limit}.',
+            'string.max': 'This field can have maximum length of {#limit}.',
+            'any.required': 'This field is required.'
+        }),
+        user_name: Joi.string().min(3).max(30).required().empty('').messages({
+            'string.min': 'This field should have a minimum length of {#limit}.',
+            'string.max': 'This field can have maximum length of {#limit}.',
+            'any.required': 'This field is required.'
+        }), //.external(User.lookupUsername),
+        email: Joi.string().min(3).max(255).required().empty('').trim(true).email().messages({
+            'string.min': 'This field should have a minimum length of {#limit}.',
+            'string.max': 'This field can have maximum length of {#limit}.',
+            'any.required': 'This field is required.',
+            'string.email': 'This field has invalid email.',
+        }),
+        //image: Joi.string().required(),
+        gender: Joi.string().required().empty('').messages({
+            'any.required': 'This field is required.',
+        }),
+        password: Joi.string().min(3).max(15).required().empty('').trim(true).messages({
+            'string.min': 'This field should have a minimum length of {#limit}.',
+            'string.max': 'This field can have maximum length of {#limit}.',
+            'any.required': 'This field is required.',
+        }),
+        password_confirmation: Joi.any().equal(Joi.ref('password')).messages({
+            'any.only': 'Invalid password confirmation.',
+        }),
     });
 
     // schema options

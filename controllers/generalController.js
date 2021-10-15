@@ -64,7 +64,7 @@ exports.submitRegister=async (req, res, next) => {
         })
     }
     else{
-        //console.log(req.file, req.body)
+        console.log(req.file, req.body)
 
         var tmp_path = req.file.path;
         var file_name= req.file.originalname;
@@ -80,7 +80,7 @@ exports.submitRegister=async (req, res, next) => {
         user.email=req.body.email;
         user.image=file_name;
         user.gender=req.body.gender;
-        user.password=helper.bcrypt_password(req.body.password);
+        user.password=await helper.bcrypt_password(req.body.password)
         user.save()
 
         res.status(200).json({
@@ -91,11 +91,39 @@ exports.submitRegister=async (req, res, next) => {
 }
 
 exports.login= (req, res) => {
-    res.render('auth/login.ejs');
+    res.render('auth/login.ejs', {layout: './layouts/guest'});
 }
 
-exports.submitLogin= (req, res) => {
-    //
+exports.submitLogin= async (req, res) => {
+    console.log(req.body);
+    const schema = Joi.object().keys({
+        email: Joi.string().max(255).required().empty('').trim(true).email().messages({
+            'string.max': 'This field can have maximum length of {#limit}.',
+            'any.required': 'This field is required.',
+            'string.email': 'This field has invalid email.',
+        }),
+        password: Joi.string().required().empty('').trim(true).messages({
+            'any.required': 'This field is required.',
+        }),
+    });
+
+    // schema options
+    const options = {
+        abortEarly: false, // include all errors
+        allowUnknown: true, // ignore unknown props
+        stripUnknown: true // remove unknown props
+    };
+
+    const validation = schema.validate(req.body, options);      //validateAsync
+    if (validation.error) {
+        res.status(422).json({
+            'status': false,
+            'message': null,
+            errors: validation.error
+        })
+    } else {
+        console.log(req.body);
+    }
 }
 
 exports.home= (req, res) => {
