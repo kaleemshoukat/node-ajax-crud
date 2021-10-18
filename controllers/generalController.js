@@ -95,7 +95,6 @@ exports.login= (req, res) => {
 }
 
 exports.submitLogin= async (req, res) => {
-    console.log(req.body);
     const schema = Joi.object().keys({
         email: Joi.string().max(255).required().empty('').trim(true).email().messages({
             'string.max': 'This field can have maximum length of {#limit}.',
@@ -121,8 +120,18 @@ exports.submitLogin= async (req, res) => {
             'message': null,
             errors: validation.error
         })
-    } else {
-        console.log(req.body);
+    }
+    else {
+        const user=await User.findOne({email: req.body.email})
+        if (user && await helper.compare_password(req.body.password, user.password)){
+
+        }
+        else{
+            res.status(200).json({
+                'status': false,
+                'message': 'Email or password is incorrect.',
+            })
+        }
     }
 }
 
