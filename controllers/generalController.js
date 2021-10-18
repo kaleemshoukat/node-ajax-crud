@@ -2,6 +2,8 @@ const Joi = require('joi');     //joi is validator
 const User = require('../models/User');     //model
 const helper = require('../helpers/helper');     //model
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
 
 exports.register= (req, res) => {
     res.render('auth/register.ejs', {layout: './layouts/guest'});
@@ -124,7 +126,8 @@ exports.submitLogin= async (req, res) => {
     else {
         const user=await User.findOne({email: req.body.email})
         if (user && await helper.compare_password(req.body.password, user.password)){
-
+            const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            console.log(token)
         }
         else{
             res.status(200).json({
