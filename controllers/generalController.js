@@ -127,7 +127,15 @@ exports.submitLogin= async (req, res) => {
         const user=await User.findOne({email: req.body.email})
         if (user && await helper.compare_password(req.body.password, user.password)){
             const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-            console.log(token)
+            const data={
+                user: user,
+                token:token
+            }
+            res.status(422).json({
+                'status': false,
+                'message': null,
+                data: data,
+            })
         }
         else{
             res.status(200).json({
