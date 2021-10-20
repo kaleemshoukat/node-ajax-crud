@@ -43,6 +43,11 @@ app.use(function(request,response,next){
     next()
 })
 
+app.use(function (req, res, next) {
+// YOU CAN CREATE A CUSTOM EJS FILE TO SHOW CUSTOM ERROR MESSAGE
+    res.status(404).render("errors/404.ejs")
+})
+
 // keep this before all routes that will use pagination
 app.use(paginate.middleware(10, 50));
 
