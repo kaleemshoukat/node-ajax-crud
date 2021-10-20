@@ -127,14 +127,12 @@ exports.submitLogin= async (req, res) => {
         const user=await User.findOne({email: req.body.email})
         if (user && await helper.compare_password(req.body.password, user.password)){
             const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-            const data={
-                user: user,
-                token:token
-            }
-            res.status(422).json({
-                'status': false,
-                'message': null,
-                data: data,
+
+            //res.setHeader('authorization', token)    for api
+            res.cookie("jwt", token, {secure: true, httpOnly: true})  //for view engines
+            res.status(200).json({
+                'status': true,
+                'message': 'logged in user.',
             })
         }
         else{
@@ -147,6 +145,11 @@ exports.submitLogin= async (req, res) => {
 }
 
 exports.home= (req, res) => {
-    res.render('home.ejs');
+    res.render('home.ejs')
+}
+
+exports.logout= (req, res) => {
+    res.clearCookie("jwt")
+    res.redirect('/login')
 }
 

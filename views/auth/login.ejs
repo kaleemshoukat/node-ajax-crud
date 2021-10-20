@@ -52,14 +52,14 @@ Login
                 email:$('#email').val(),
                 password:$('#password').val(),
             },
-            success: function (data) {
-                if (data.status) {
+            success: function (response) {
+                if (response.status) {
                     $.unblockUI();
-                    success(data.message);
+                    window.location.href = "/home";
                 }
                 else {
                     $.unblockUI();
-                    error(data.message);
+                    error(response.message);
                 }
             },
             error: function (response, exception) {
