@@ -97,50 +97,22 @@ exports.login= (req, res) => {
 }
 
 exports.submitLogin= async (req, res) => {
-    const schema = Joi.object().keys({
-        email: Joi.string().max(255).required().empty('').trim(true).email().messages({
-            'string.max': 'This field can have maximum length of {#limit}.',
-            'any.required': 'This field is required.',
-            'string.email': 'This field has invalid email.',
-        }),
-        password: Joi.string().required().empty('').trim(true).messages({
-            'any.required': 'This field is required.',
-        }),
-    });
+    const user=await User.findOne({email: req.body.email})
+    if (user && await helper.compare_password(req.body.password, user.password)){
+        const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    // schema options
-    const options = {
-        abortEarly: false, // include all errors
-        allowUnknown: true, // ignore unknown props
-        stripUnknown: true // remove unknown props
-    };
-
-    const validation = schema.validate(req.body, options);      //validateAsync
-    if (validation.error) {
-        res.status(422).json({
-            'status': false,
-            'message': null,
-            errors: validation.error
+        //res.setHeader('authorization', token)    for api
+        res.cookie("jwt", token, {secure: true, httpOnly: true})  //for view engines
+        res.status(200).json({
+            'status': true,
+            'message': 'logged in user.',
         })
     }
-    else {
-        const user=await User.findOne({email: req.body.email})
-        if (user && await helper.compare_password(req.body.password, user.password)){
-            const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-            //res.setHeader('authorization', token)    for api
-            res.cookie("jwt", token, {secure: true, httpOnly: true})  //for view engines
-            res.status(200).json({
-                'status': true,
-                'message': 'logged in user.',
-            })
-        }
-        else{
-            res.status(200).json({
-                'status': false,
-                'message': 'Email or password is incorrect.',
-            })
-        }
+    else{
+        res.status(200).json({
+            'status': false,
+            'message': 'Email or password is incorrect.',
+        })
     }
 }
 

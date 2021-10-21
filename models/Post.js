@@ -13,7 +13,8 @@ const PostSchema = new Schema({
         min: 3,
         max: 1000,
         required: true
-    }
+    },
+    user_id: { type: Schema.Types.ObjectId, ref: 'User' },
 },{
     timestamps: true
 });

@@ -6,7 +6,7 @@ exports.addPost= (req, res) => {
     res.render('add-post.ejs');
 }
 
-exports.submitPost= (req, res) => {
+exports.submitPost= async (req, res) => {
     const schema = Joi.object().keys({
         title: Joi.string().alphanum().min(3).max(30).required(),
         description: Joi.string().min(3).max(1000).required(),
@@ -25,9 +25,12 @@ exports.submitPost= (req, res) => {
     }
     else {
         try{
+            //console.log(await jwt.decode(req.cookies['jwt'], process.env.JWT_SECRET))
+
             let post=new Post()
             post.title= req.body.title
             post.description= req.body.description
+            post.user_id= '6151ca0000217b5b36b1ac88'
             post.save()
 
             res.render("add-post.ejs", {successMessage: 'Post created successfully!'});

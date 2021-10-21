@@ -9,6 +9,7 @@ const generalController = require('../controllers/generalController');
 
 //required validations
 const registerValidation= require('../validations/registerValidation');
+const loginValidation= require('../validations/loginValidation');
 
 //required middlewares
 const authMiddleware= require('../middlewares/authMiddleware');
@@ -18,7 +19,7 @@ router.get('/', generalController.register);
 router.post('/submit-register', upload.single('image'), generalController.submitRegister);
 // router.post('/submit-register', registerValidation, upload.single('image'), generalController.submitRegister);
 router.get('/login', generalController.login);
-router.post('/submit-login', generalController.submitLogin);
+router.post('/submit-login', loginValidation, generalController.submitLogin);
 
 router.use(authMiddleware.authenticateToken);
 router.get('/home', generalController.home);
