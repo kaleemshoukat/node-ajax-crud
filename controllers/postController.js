@@ -25,7 +25,7 @@ exports.submitPost= async (req, res) => {
     }
     else {
         try{
-            //console.log(await jwt.decode(req.cookies['jwt'], process.env.JWT_SECRET))
+            // console.log(await jwt.decode(req.cookies.jwt, process.env.JWT_SECRET))
 
             let post=new Post()
             post.title= req.body.title

@@ -99,7 +99,7 @@ exports.login= (req, res) => {
 exports.submitLogin= async (req, res) => {
     const user=await User.findOne({email: req.body.email})
     if (user && await helper.compare_password(req.body.password, user.password)){
-        const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ sub: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
         //res.setHeader('authorization', token)    for api
         res.cookie("jwt", token, {secure: true, httpOnly: true})  //for view engines
