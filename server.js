@@ -2,7 +2,7 @@ const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const bodyParser= require('body-parser');
 const morgan= require('morgan');
-const dotenv = require('dotenv');
+const dotenv = require('dotenv').config();
 const csrf = require('csurf');
 const cookieParser = require('cookie-parser');
 const paginate = require('express-paginate');
@@ -18,7 +18,6 @@ app.set('view engine','ejs');
 app.set("layout extractScripts", true);
 
 //set listener
-dotenv.config();
 const port = process.env.PORT;
 app.listen(port, () => { console.log(`App running on port ${port}`) });
 
@@ -47,11 +46,7 @@ app.use(function(request,response,next){
 app.use(paginate.middleware(10, 50));
 
 // import the routes
-const generalRoutes = require('./routes/generalRoutes');
-app.use('/', generalRoutes);
-
-const postRoutes = require('./routes/postRoutes');
-app.use('/', postRoutes);
+app.use(require('./routes'));
 
 //always put it in the last
 const errorMiddleware=require('./middlewares/errorMiddleware')

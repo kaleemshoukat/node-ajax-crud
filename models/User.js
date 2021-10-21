@@ -48,18 +48,18 @@ const UserSchema = new Schema({
     timestamps: true
 });
 
-const lookupEmail = async (email) => {
-    const user = await User.find({email: email});
-    if (user) {
-        throw new Error('Email already exists.');
-    }
+UserSchema.statics.getUserByEmail = async function (email) {
+    let search = { email: email }
+    let foundUser = null
+    foundUser = await User.findOne(search)
+    return foundUser
 }
 
-const lookupUsername = async (user_name) => {
-    const user = await User.find({user_name: user_name});
-    if (user) {
-        throw new Error('Username already exists.');
-    }
+UserSchema.statics.getUserByUsername = async function (user_name) {
+    let search = { user_name: user_name }
+    let foundUser = null
+    foundUser = await User.findOne(search)
+    return foundUser
 }
 
 const User=mongoose.model('User', UserSchema)
