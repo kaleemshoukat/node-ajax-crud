@@ -127,7 +127,7 @@ Posts
                                 '<td>' + status_date + '</td>' +
                                 '<td>' +
                                 '<a href="javascript:void(0)" data-id="'+item._id+'" data-title="'+item.title+'" data-description="'+item.description+'" data-toggle="modal" data-target="#exampleModal" class="btn btn-success btn-sm edit_post">Edit</a>'+
-                                '<a href="javascript:void(0)" class="btn btn-danger btn-sm delete_post" data-id="'+item._id+'">Delete</a>' +
+                                '<a href="javascript:void(0)" class="btn btn-danger btn-sm delete_post" data-url="/delete-post/'+item._id+'">Delete</a>' +
                                 '</td>' +
                                 '</tr>';
                             ++ response.data.count;
@@ -206,39 +206,7 @@ Posts
 
     //delete
     $(document).on('click','.delete_post',function () {
-        var id= $(this).attr('data-id');
-
-        $.confirm({
-            title: 'Are you Sure?',
-            content: 'You Really want to delete this post.',
-            type: 'red',
-            buttons: {
-                ok: {
-                    text: "Yes!",
-                    btnClass: 'btn-primary',
-                    keys: ['enter'],
-                    action: function(){
-                        $.blockUI();
-
-                        $.ajax({
-                            url: "/delete-post/"+id,
-                            type: 'get',
-                            success: function (data) {
-                                pageloading(0);
-                                $.unblockUI();
-                                $.alert(data.message);
-                            },
-                            error: function (data) {
-                                $.unblockUI();
-                                $.alert(data.message);
-                            },
-                        });
-                    }
-                },
-                cancel: function(){
-                    $.alert('Post is safe!');
-                }
-            }
-        });
+        var url= $(this).attr('data-url');
+        delete_record(url);
     });
 </script>

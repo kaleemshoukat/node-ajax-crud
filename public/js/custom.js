@@ -113,3 +113,40 @@ $(document).on('submit', '.create_form', function (e) {
         },
     });
 });
+
+//////////////////////////////delete function ////////////////////////
+function delete_record(url){
+    $.confirm({
+        title: 'Are you Sure?',
+        content: 'You Really want to delete this record.',
+        type: 'red',
+        buttons: {
+            ok: {
+                text: "Yes!",
+                btnClass: 'btn-primary',
+                keys: ['enter'],
+                action: function(){
+                    $.blockUI();
+
+                    $.ajax({
+                        url: url,
+                        type: 'get',
+                        success: function (data) {
+                            pageloading(0);
+                            $.unblockUI();
+                            $.alert(data.message);
+                        },
+                        error: function (data) {
+                            $.unblockUI();
+                            $.alert(data.message);
+                        },
+                    });
+                }
+            },
+            cancel: function(){
+                $.alert('Record is safe!');
+            }
+        }
+    });
+}
+
