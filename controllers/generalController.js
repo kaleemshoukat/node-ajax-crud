@@ -4,6 +4,8 @@ const helper = require('../helpers/helper');     //model
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const mail = require('../config/mail');
+const ejs = require('ejs');
 
 exports.register= (req, res) => {
     res.render('auth/register.ejs', {layout: './layouts/guest'});
@@ -124,4 +126,81 @@ exports.logout= (req, res) => {
     res.clearCookie("jwt")
     res.redirect('/login')
 }
+
+exports.forgotPassword= (req, res) => {
+    res.render('auth/forgot-password.ejs', {layout: './layouts/guest'})
+}
+
+exports.submitForgotPassword= async (req, res) => {
+    const user= await User.findUserByEmail(req.body.email)
+    if (user){
+        const token= await helper.randomStr(20)
+        user.token=token
+        user.save()
+
+        // const file_path= require('../views/emails/forgot-password-email.ejs')
+        // const template = await ejs.renderFile(file_path, { name: 'Stranger' });
+        const mainOptions = {
+            from: process.env.MAIL_ADDRESS,
+            to: req.body.email,
+            subject: 'Forgot Password',
+            html: '<h1>Click this <a href="'+process.env.APP_URL+'/reset-password/'+token+'">link</a> to rest password.</h1>'
+        }
+
+        mail.transporter.sendMail(mainOptions, (err, info) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log('\nMessage sent: ' + info.response);
+            }
+        })
+
+        res.status(200).json({
+            status: true,
+            message: 'Password reset link is sent to this email please check.',
+        })
+    }
+    else {
+        res.status(200).json({
+            status: false,
+            message: 'Email do not exist.',
+        })
+    }
+}
+
+exports.resetPassword= async (req, res) => {
+    const user= await User.findUserByToken(req.params.token)
+    if (user){
+        user.token=null
+        user.save()
+
+        res.render('auth/reset-password.ejs', {layout: './layouts/guest', id: user._id})
+    }
+    else{
+        res.redirect('/login')      //user here flah message
+    }
+}
+
+exports.submitResetPassword= async (req, res, next) => {
+    const user= await User.findUserByMongoID(req.body.id)
+    if (user){
+        user.token=null
+        user.password= await helper.bcrypt_password(req.body.password)
+        user.save()
+
+        res.status(200).json({
+            status: true,
+            message: 'Password reset successfully please login.',
+        })
+    }
+    else{
+        res.status(200).json({
+            status: false,
+            message: 'Something went wrong.',
+        })
+    }
+}
+
+
+
 

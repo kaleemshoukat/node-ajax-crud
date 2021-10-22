@@ -43,23 +43,55 @@ const UserSchema = new Schema({
         type: String,
         max: 255,
         required: true
+    },
+    token: {
+        type: String,
+        max: 255,
+        default: null
     }
 },{
     timestamps: true
 });
 
-UserSchema.statics.getUserByEmail = async function (email) {
+UserSchema.statics.findUserByEmail = async (email) => {
     let search = { email: email }
     let foundUser = null
     foundUser = await User.findOne(search)
     return foundUser
 }
 
-UserSchema.statics.getUserByUsername = async function (user_name) {
+UserSchema.statics.findUserByUsername = async (user_name) => {
     let search = { user_name: user_name }
     let foundUser = null
     foundUser = await User.findOne(search)
     return foundUser
+}
+
+UserSchema.statics.findUserByToken = async (token) => {
+    let search = { token: token }
+    let foundUser = null
+    foundUser = await User.findOne(search)
+    return foundUser
+}
+
+UserSchema.statics.findUserByMongoID = async (id) => {
+    ///Make sure to cast id as ObjectID
+    let objID = mongoose.Types.ObjectId(id)
+    let search = { _id: objID }
+    let user = null
+    user = await User.findById(search)
+    return user
+}
+
+//update
+UserSchema.methods.updatePassword = (newPass) => {
+    this.password = newPass
+    return this.save()
+}
+
+UserSchema.methods.updateToken = async (token) => {
+    this.token = token
+    return this.save()
 }
 
 const User=mongoose.model('User', UserSchema)
