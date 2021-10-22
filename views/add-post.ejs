@@ -3,36 +3,18 @@ Add Post
 <%- contentFor('body') %>
 <div class="col-md-12">
     <h2 class="text-danger">Add Post</h2>
-    <% if(typeof errorMessage !== "undefined"){ %>
-    <div class="alert alert-danger">
-        <ul>
-            <% for(var i = 0; i < errorMessage['details'].length; i++){ %>
-                <li> <%= errorMessage['details'][i]['message'] %> </li>
-            <% } %>
-        </ul>
-    </div>
-    <% } %>
-    <% if (typeof successMessage !== "undefined") { %>
-            <div class="alert alert-primary alert-dismissible fade show" role="alert">
-                <%= successMessage %>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-    <% } %>
-    <form action="/submit-post" method="post">
-        <input type="hidden" name="_csrf" value="<%- _csrf  %>">
+    <form id="add_post_from">
         <div class="row">
             <div class="col-md-8">
                 <div class="form-group">
                     <label for="">Title</label>
-                    <input type="text" name="title" value="<% if(typeof errorMessage !== "undefined"){ %><%- inputData.title %><% } %>" class="form-control">
+                    <input type="text" name="title" id="title" class="form-control">
                 </div>
             </div>
             <div class="col-md-8">
                 <div class="form-group">
                     <label for="">Description</label>
-                    <textarea name="description" class="form-control"><% if(typeof errorMessage !== "undefined"){ %><%-inputData.description%><% } %></textarea>
+                    <textarea name="description" id="description" class="form-control"></textarea>
                 </div>
             </div>
             <div class="col-md-8">
@@ -41,3 +23,40 @@ Add Post
         </div>
     </form>
 </div>
+<script>
+    $(document).on('submit', '#add_post_from', function (e) {
+        e.preventDefault();
+        $('span.input-error').remove();
+        block_ui();
+
+        $.ajax({
+            type: 'post',
+            url: '/submit-post',
+            data: {
+                title:$('#title').val(),
+                description:$('#description').val(),
+            },
+            success: function (data) {
+                if (data.status) {
+                    $('#add_post_from')[0].reset();
+                    $.unblockUI();
+                    success(data.message);
+                }
+                else {
+                    $.unblockUI();
+                    error(data.message);
+                }
+            },
+            error: function (response, exception) {
+                var errors = JSON.parse(response.responseText).errors.details;
+                $.each(errors, function (i, error_arr) {
+                    if ($('span.text-danger.' + error_arr.context.label).length == 0) {
+                        $('.form-control[name="' + error_arr.context.label + '"]').after('<span class="input-error ' + error_arr.context.label + ' text-strong text-danger">' + error_arr.message + '</span>');
+                    }
+                });
+                $.unblockUI();
+                error("Please resolve following errors.");
+            },
+        });
+    });
+</script>

@@ -8,8 +8,17 @@ exports.addPost= (req, res) => {
 
 exports.submitPost= async (req, res) => {
     const schema = Joi.object().keys({
-        title: Joi.string().alphanum().min(3).max(30).required(),
-        description: Joi.string().min(3).max(1000).required(),
+        title: Joi.string().alphanum().min(3).max(30).required().empty('').messages({
+            'string.alphanum': 'This field can have Only alphabets.',
+            'string.min': 'This field should have a minimum length of {#limit}.',
+            'string.max': 'This field can have maximum length of {#limit}.',
+            'any.required': 'This field is required.'
+        }),
+        description: Joi.string().min(3).max(1000).required().empty('').messages({
+            'string.min': 'This field should have a minimum length of {#limit}.',
+            'string.max': 'This field can have maximum length of {#limit}.',
+            'any.required': 'This field is required.'
+        }),
     });
 
     // schema options
@@ -21,7 +30,11 @@ exports.submitPost= async (req, res) => {
 
     const validation = schema.validate(req.body, options);
     if(validation.error){
-        res.render("add-post.ejs", {errorMessage: validation.error, inputData: req.body});
+        res.status(422).json({
+            'status':false,
+            'message': null,
+            errors: validation.error
+        })
     }
     else {
         try{
@@ -33,10 +46,16 @@ exports.submitPost= async (req, res) => {
             post.user_id= '6151ca0000217b5b36b1ac88'
             post.save()
 
-            res.render("add-post.ejs", {successMessage: 'Post created successfully!'});
+            res.status(200).json({
+                'status':true,
+                'message': "Post created successfully"
+            })
         }
         catch (error) {
-            res.status(500).send(error);
+            res.status(200).json({
+                'status':true,
+                'message': "Something went wrong."
+            })
         }
     }
 }
