@@ -18,8 +18,7 @@ router.post('/submit-post', addPostValidation, postController.submitPost);
 router.get('/posts', postController.posts);
 router.post('/get-posts', postController.getPosts);
 router.get('/delete-post/:id', postController.delete);
-router.get('/edit-post/:id', postController.editPost);
-router.post('/update-post/:id', postController.updatePost);
+router.post('/update-post', addPostValidation, postController.updatePost);
 
 
 

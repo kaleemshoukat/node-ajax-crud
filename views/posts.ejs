@@ -44,6 +44,44 @@ Posts
     <%- include('./partials/pagination.ejs') %>
 
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="javascript:void(0)" id="edit_post_from">
+                <div class="modal-body">
+                    <div class="row">
+                        <input type="hidden" name="id" id="id_edit">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="">Title</label>
+                                <input type="text" name="title" id="title_edit" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="">Description</label>
+                                <textarea name="description" id="description_edit" class="form-control"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     var monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     window.onload = pageloading(0);
@@ -88,7 +126,7 @@ Posts
                                 '<td>' + item.description + '</td>' +
                                 '<td>' + status_date + '</td>' +
                                 '<td>' +
-                                '<a href="/edit-post/'+item._id+'" class="btn btn-success btn-sm">Edit</a>'+
+                                '<a href="javascript:void(0)" data-id="'+item._id+'" data-title="'+item.title+'" data-description="'+item.description+'" data-toggle="modal" data-target="#exampleModal" class="btn btn-success btn-sm edit_post">Edit</a>'+
                                 '<a href="javascript:void(0)" class="btn btn-danger btn-sm delete_post" data-id="'+item._id+'">Delete</a>' +
                                 '</td>' +
                                 '</tr>';
@@ -121,5 +159,86 @@ Posts
         });
     }
 
+    //update
+    $(document).on('click', '.edit_post', function () {
+        var id= $(this).attr('data-id');
+        var title= $(this).attr('data-title');
+        var description= $(this).attr('data-description');
 
+        $('#id_edit').val(id)
+        $('#title_edit').val(title)
+        $('#description_edit').val(description)
+    })
+
+    $(document).on('submit', '#edit_post_from', function (e) {
+        e.preventDefault();
+        $('span.input-error').remove();
+        block_ui();
+
+        $.ajax({
+            type: 'post',
+            url: '/update-post',
+            data: $('#edit_post_from').serialize(),
+            success: function (data) {
+                if (data.status) {
+                    $('.modal').modal('hide');
+                    pageloading(0);
+                    $.unblockUI();
+                    success(data.message);
+                }
+                else {
+                    $.unblockUI();
+                    error(data.message);
+                }
+            },
+            error: function (response, exception) {
+                var errors = JSON.parse(response.responseText).errors.details;
+                $.each(errors, function (i, error_arr) {
+                    if ($('span.text-danger.' + error_arr.context.label).length == 0) {
+                        $('.form-control[name="' + error_arr.context.label + '"]').after('<span class="input-error ' + error_arr.context.label + ' text-strong text-danger">' + error_arr.message + '</span>');
+                    }
+                });
+                $.unblockUI();
+                error("Please resolve following errors.");
+            },
+        });
+    });
+
+    //delete
+    $(document).on('click','.delete_post',function () {
+        var id= $(this).attr('data-id');
+
+        $.confirm({
+            title: 'Are you Sure?',
+            content: 'You Really want to delete this post.',
+            type: 'red',
+            buttons: {
+                ok: {
+                    text: "Yes!",
+                    btnClass: 'btn-primary',
+                    keys: ['enter'],
+                    action: function(){
+                        $.blockUI();
+
+                        $.ajax({
+                            url: "/delete-post/"+id,
+                            type: 'get',
+                            success: function (data) {
+                                pageloading(0);
+                                $.unblockUI();
+                                $.alert(data.message);
+                            },
+                            error: function (data) {
+                                $.unblockUI();
+                                $.alert(data.message);
+                            },
+                        });
+                    }
+                },
+                cancel: function(){
+                    $.alert('Post is safe!');
+                }
+            }
+        });
+    });
 </script>

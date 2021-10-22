@@ -67,52 +67,34 @@ exports.getPosts=async (req, res, next)=> {
 exports.delete= async (req, res) => {
     try{
         await Post.findByIdAndDelete(req.params.id)
-        res.redirect('/posts')
-    }
-    catch (error) {
-        res.status(500).send(error);
-    }
-}
 
-exports.editPost= async (req, res) => {
-    try{
-        const post=await Post.findById(req.params.id)
-        res.render('edit-post.ejs', {post: post});
+        res.status(200).json({
+            status: true,
+            message: "Post deleted successfully!"
+        })
     }
     catch (error) {
-        res.status(500).send(error);
+        res.status(500).json({
+            status: true,
+            message: "Something went wrong."
+        })
     }
 }
 
 exports.updatePost= async (req, res) => {
-    const schema = Joi.object().keys({
-        title: Joi.string().alphanum().min(3).max(30).required(),
-        description: Joi.string().min(3).max(1000).required(),
-    });
+    try{
+        const post=await Post.findById(req.body.id)
+        post.title=req.body.title
+        post.description=req.body.description
+        post.save()
 
-    // schema options
-    const options = {
-        abortEarly: false, // include all errors
-        allowUnknown: true, // ignore unknown props
-        stripUnknown: true // remove unknown props
+        res.status(200).json({
+            'status':true,
+            'message': "Post updated successfully."
+        })
     }
-
-    const validation = schema.validate(req.body, options);
-    if(validation.error){
-        res.render("edit-post.ejs", {errorMessage: validation.error});
-    }
-    else {
-        try{
-            const post=await Post.findById(req.params.id)
-            post.title=req.body.title
-            post.description=req.body.description
-            post.save()
-
-            res.redirect('/posts')
-        }
-        catch (error) {
-            res.status(500).send(error);
-        }
+    catch (error) {
+        res.status(500).send(error);
     }
 }
 
