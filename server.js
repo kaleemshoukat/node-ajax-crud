@@ -5,7 +5,6 @@ const morgan= require('morgan');
 const dotenv = require('dotenv').config();
 const csrf = require('csurf');
 const cookieParser = require('cookie-parser');
-const paginate = require('express-paginate');
 const app = express();
 
 // Static Files (we dont need to write public word in the links)
@@ -41,9 +40,6 @@ app.use(function(request,response,next){
     app.locals._csrf = request.csrfToken()
     next()
 })
-
-// keep this before all routes that will use pagination
-app.use(paginate.middleware(10, 50));
 
 // import the routes
 app.use(require('./routes'));

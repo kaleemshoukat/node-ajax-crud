@@ -1,85 +1,63 @@
 const Joi = require('joi');     //joi is validator
 const Post = require('../models/Post');     //model
-const paginate = require('express-paginate');
 
 exports.addPost= (req, res) => {
     res.render('add-post.ejs');
 }
 
 exports.submitPost= async (req, res) => {
-    const schema = Joi.object().keys({
-        title: Joi.string().alphanum().min(3).max(30).required().empty('').messages({
-            'string.alphanum': 'This field can have Only alphabets.',
-            'string.min': 'This field should have a minimum length of {#limit}.',
-            'string.max': 'This field can have maximum length of {#limit}.',
-            'any.required': 'This field is required.'
-        }),
-        description: Joi.string().min(3).max(1000).required().empty('').messages({
-            'string.min': 'This field should have a minimum length of {#limit}.',
-            'string.max': 'This field can have maximum length of {#limit}.',
-            'any.required': 'This field is required.'
-        }),
-    });
+    try{
+        // console.log(await jwt.decode(req.cookies.jwt, process.env.JWT_SECRET))
 
-    // schema options
-    const options = {
-        abortEarly: false, // include all errors
-        allowUnknown: true, // ignore unknown props
-        stripUnknown: true // remove unknown props
-    };
+        let post=new Post()
+        post.title= req.body.title
+        post.description= req.body.description
+        post.user_id= '6151ca0000217b5b36b1ac88'
+        post.save()
 
-    const validation = schema.validate(req.body, options);
-    if(validation.error){
-        res.status(422).json({
-            'status':false,
-            'message': null,
-            errors: validation.error
+        res.status(200).json({
+            'status':true,
+            'message': "Post created successfully"
         })
     }
-    else {
-        try{
-            // console.log(await jwt.decode(req.cookies.jwt, process.env.JWT_SECRET))
-
-            let post=new Post()
-            post.title= req.body.title
-            post.description= req.body.description
-            post.user_id= '6151ca0000217b5b36b1ac88'
-            post.save()
-
-            res.status(200).json({
-                'status':true,
-                'message': "Post created successfully"
-            })
-        }
-        catch (error) {
-            res.status(200).json({
-                'status':true,
-                'message': "Something went wrong."
-            })
-        }
+    catch (error) {
+        res.status(200).json({
+            'status':true,
+            'message': "Something went wrong."
+        })
     }
 }
 
 exports.posts=async (req, res, next)=> {
-    // try {
-    //     const posts=await Post.find({});
-    //     res.render('posts.ejs', {posts: posts});
-    // }
-    // catch (error) {
-    //     res.status(500).send(error);
-    // }
+    res.render('posts.ejs')
+}
 
+exports.getPosts=async (req, res, next)=> {
     try {
-        const results=await Post.find({}).limit(req.query.limit).skip(req.skip).lean().exec();
-        const itemCount =await Post.count({});
-        const pageCount = Math.ceil(itemCount / req.query.limit);
+        const body= req.body
+        const offset = (body.page_num - 1) * 10;
 
-        res.render('posts.ejs', {
-            posts: results,
-            pageCount,
-            itemCount,
-            pages: paginate.getArrayPages(req)(3, pageCount, req.query.page)
-        });
+        const search={}
+        if (body.title){
+            search.title={$regex: body.title, $options: 'i'}        //like query
+        }
+        if (body.description){
+            search.description=body.description
+        }
+        //console.log(search)
+
+        const results=await Post.find(search).limit(10).skip(offset);
+        const total =await Post.count(search);
+
+        res.status(200).json({
+            status : true,
+            message: "Success",
+            data : {
+                results: results,
+                total: total,
+                count: offset+1,
+            }
+        })
     }
     catch (error) {
         res.status(500).send(error);
