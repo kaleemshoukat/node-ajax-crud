@@ -1,5 +1,6 @@
 const mongoose=require('mongoose')
 const Schema=mongoose.Schema
+const Post=require('../models/Post')
 
 const UserSchema = new Schema({
     first_name: {
@@ -53,6 +54,7 @@ const UserSchema = new Schema({
     timestamps: true
 });
 
+//static methods
 UserSchema.statics.findUserByEmail = async (email) => {
     let search = { email: email }
     let foundUser = null
@@ -83,7 +85,7 @@ UserSchema.statics.findUserByMongoID = async (id) => {
     return user
 }
 
-//update
+//document methods
 UserSchema.methods.updatePassword = (newPass) => {
     this.password = newPass
     return this.save()
@@ -93,6 +95,21 @@ UserSchema.methods.updateToken = async (token) => {
     this.token = token
     return this.save()
 }
+
+//cascade removing post when user is deleted
+UserSchema.pre('remove', function(next) {
+    // 'this' is the client being removed. Provide callbacks here if you want
+    Post.remove({user_id: this._id}).exec();
+    next();
+});
+
+//set get while quering
+UserSchema.set('toObject', { virtuals: true })
+UserSchema.set('toJSON', { virtuals: true })
+
+UserSchema.virtual('full_name').get(function() {
+    return this.first_name + ' ' + this.last_name;
+});
 
 const User=mongoose.model('User', UserSchema)
 module.exports=User

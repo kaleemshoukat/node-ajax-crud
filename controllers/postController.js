@@ -37,7 +37,7 @@ exports.getPosts=async (req, res, next)=> {
         const body= req.body
         const offset = (body.page_num - 1) * 10;
 
-        const search={user_id: req.user_id}
+        const search={}
         if (body.title){
             search.title={$regex: body.title, $options: 'i'}        //like query
         }

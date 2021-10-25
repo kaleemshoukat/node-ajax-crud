@@ -1,0 +1,216 @@
+<%- contentFor('title') %>
+Posts
+<%- contentFor('body') %>
+<div class="col-md-12 card mt-5 bg-light">
+    <div class="card-title">Search</div>
+    <div class="card-body">
+        <form action="javascript:void(0)">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" name="name" id="name" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>User Name</label>
+                        <input type="text" name="user_name" id="user_name" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button id="submit_btn" class="btn btn-success">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="col-md-12 table-responsive mt-5">
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>User Name</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th>Created At</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="append_list">
+
+        </tbody>
+    </table>
+
+    <%- include('./partials/pagination.ejs') %>
+
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="javascript:void(0)" id="edit_post_from">
+                <div class="modal-body">
+                    <div class="row">
+                        <input type="hidden" name="id" id="id_edit">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="">Title</label>
+                                <input type="text" name="title" id="title_edit" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="">Description</label>
+                                <textarea name="description" id="description_edit" class="form-control"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    window.onload = pageloading(0);
+
+    var name='';
+    var user_name='';
+
+    $('#submit_btn').on('click', function () {
+        name=$('#name').val();
+        user_name=$('#user_name').val();
+        pageloading(0);
+    });
+
+    function pageloading(page) {
+        $('#example-2').pagination({
+            total: 1, // 总数据条数
+            current: 1, // 当前页码
+            length: 1, // 每页数据量
+            size: 1, // 显示按钮个数
+            prev: 'Previous',
+            next: 'Next',
+            ajax: function (options, refresh, $target) {
+                $.ajax({
+                    type: "post",
+                    url: '/users/list',
+                    data: {
+                        _csrf : $('meta[name="_csrf"]').attr('content'),
+                        page_num: options.current,
+                        name : name,
+                        user_name : user_name,
+                    },
+                    success: function (response) {
+                        var html = '';
+
+                        $.each(response.data.results, function (i, item) {
+                            var d = new Date(item.createdAt);
+                            var status_date = d.getDate() + "-" + monthShortNames[d.getMonth()] + "-" + d.getFullYear();
+
+                            html+='<tr>' +
+                                '<td>' + response.data.count + '</td>' +
+                                '<td>' + item.full_name + '</td>' +
+                                '<td>' + item.user_name + '</td>' +
+                                '<td>' + item.email + '</td>' +
+                                '<td>' + item.gender + '</td>' +
+                                '<td>' + status_date + '</td>' +
+                                '<td>' +
+                                '<a href="javascript:void(0)" data-id="'+item._id+'" data-user_name="'+item.user_name+'" data-toggle="modal" data-target="#exampleModal" class="btn btn-success btn-sm edit_post">Edit</a>'+
+                                '<a href="javascript:void(0)" class="btn btn-danger btn-sm delete_post" data-url="/delete-post/'+item._id+'">Delete</a>' +
+                                '</td>' +
+                                '</tr>';
+                            ++ response.data.count;
+                        });
+                        if (html == "") {
+                            html += '<tr class="text-center">' +
+                                '<td colspan="7">No Data</td>' +
+                                '</tr>';
+                        }
+
+                        $('#append_list').html('');
+                        $('#append_list').append(html);
+
+                        refresh({
+                            total: response.data.total, // 可选
+                            length: 10, // 可选
+                        });
+                    },
+                    error: function () {
+                        var html = '';
+                        html += '<tr class="text-center">' +
+                            '<td colspan="7">No Data</td>' +
+                            '</tr>';
+                        $('#append_list').html('');
+                        $('#append_list').append(html);
+                    }
+                });
+            }
+        });
+    }
+
+    //update
+    $(document).on('click', '.edit_post', function () {
+        var id= $(this).attr('data-id');
+        var title= $(this).attr('data-title');
+        var description= $(this).attr('data-description');
+
+        $('#id_edit').val(id)
+        $('#title_edit').val(title)
+        $('#description_edit').val(description)
+    })
+
+    $(document).on('submit', '#edit_post_from', function (e) {
+        e.preventDefault();
+        $('span.input-error').remove();
+        block_ui();
+
+        $.ajax({
+            type: 'post',
+            url: '/update-post',
+            data: $('#edit_post_from').serialize(),
+            success: function (data) {
+                if (data.status) {
+                    $('.modal').modal('hide');
+                    pageloading(0);
+                    $.unblockUI();
+                    success(data.message);
+                }
+                else {
+                    $.unblockUI();
+                    error(data.message);
+                }
+            },
+            error: function (response, exception) {
+                var errors = JSON.parse(response.responseText).errors.details;
+                $.each(errors, function (i, error_arr) {
+                    if ($('span.text-danger.' + error_arr.context.label).length == 0) {
+                        $('.form-control[name="' + error_arr.context.label + '"]').after('<span class="input-error ' + error_arr.context.label + ' text-strong text-danger">' + error_arr.message + '</span>');
+                    }
+                });
+                $.unblockUI();
+                error("Please resolve following errors.");
+            },
+        });
+    });
+
+    //delete
+    $(document).on('click','.delete_post',function () {
+        var url= $(this).attr('data-url');
+        delete_record(url);
+    });
+</script>
