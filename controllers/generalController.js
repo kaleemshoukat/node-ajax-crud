@@ -101,7 +101,7 @@ exports.login= (req, res) => {
 exports.submitLogin= async (req, res) => {
     const user=await User.findOne({email: req.body.email})
     if (user && await helper.compare_password(req.body.password, user.password)){
-        const token = jwt.sign({ sub: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
         //res.setHeader('authorization', token)    for api
         res.cookie("jwt", token, {secure: true, httpOnly: true})  //for view engines
@@ -139,7 +139,7 @@ exports.submitForgotPassword= async (req, res) => {
         user.save()
 
         // const file_path= require('../views/emails/forgot-password-email.ejs')
-        // const template = await ejs.renderFile(file_path, {layout : false, token: token})
+        // const template = await ejs.renderFile(file_path, {layout : false, token: token});
         const mainOptions = {
             from: process.env.MAIL_ADDRESS,
             to: req.body.email,

@@ -12,7 +12,7 @@ exports.submitPost= async (req, res) => {
         let post=new Post()
         post.title= req.body.title
         post.description= req.body.description
-        post.user_id= '6151ca0000217b5b36b1ac88'
+        post.user_id= req.user_id
         post.save()
 
         res.status(200).json({
@@ -37,7 +37,7 @@ exports.getPosts=async (req, res, next)=> {
         const body= req.body
         const offset = (body.page_num - 1) * 10;
 
-        const search={}
+        const search={user_id: req.user_id}
         if (body.title){
             search.title={$regex: body.title, $options: 'i'}        //like query
         }
