@@ -139,7 +139,7 @@ exports.submitForgotPassword= async (req, res) => {
         user.save()
 
         // const file_path= require('../views/emails/forgot-password-email.ejs')
-        // const template = await ejs.renderFile(file_path, { name: 'Stranger' });
+        // const template = await ejs.renderFile(file_path, {layout : false, token: token})
         const mainOptions = {
             from: process.env.MAIL_ADDRESS,
             to: req.body.email,
